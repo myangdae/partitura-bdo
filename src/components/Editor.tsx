@@ -281,6 +281,7 @@ export default function Editor() {
               <div className="f">
                 <label htmlFor="bpm">BPM</label>
                 <input id="bpm" type="number" min={20} max={300} value={bpm} onChange={(e) => setBpm(Number(e.target.value))} />
+                <div className="hint">Só afeta a velocidade da prévia sonora (botão "Ouvir"). Não muda quais notas aparecem no grid.</div>
               </div>
               <div className="f">
                 <label htmlFor="estilo">Estilo</label>

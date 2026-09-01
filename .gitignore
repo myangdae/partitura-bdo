@@ -16,3 +16,6 @@ Thumbs.db
 
 # logs
 npm-debug.log*
+
+# arquivos de música de teste do usuário — não pertencem ao repositório público
+music/

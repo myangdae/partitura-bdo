@@ -45,6 +45,7 @@ Levantadas por inspeção direta da interface. **Não alterar sem verificar no j
 - Limite de notas e de compassos por grau de Talento Musical. O `10000` do editor não é o limite de salvamento.
 - Como o campo de BPM conta o pulso. Empiricamente, `60` produziu 1,5s por grupo de três colcheias em 6/8 — o dobro do esperado. Confirmar a relação antes de automatizar a conversão de andamento.
 - Quantos espaços de 1/8 cabem entre dois números da régua em cada Ritmo. Em 6/8 observamos 12, o que sugere que um segmento da régua equivale a dois compassos de 6/8.
+- **Convenção de oitava.** A ferramenta assume MIDI 60 = C4 (dó central) e MIDI 69 = A4 = 440Hz — o padrão científico/MIDI. Os prints do editor mostram rótulos nesse mesmo formato (C4...D6), mas isso não prova que o motor de áudio do jogo usa o mesmo deslocamento de oitava ao tocar a nota — DAWs diferentes numeram isso de formas diferentes (ex.: Ableton chama o dó central de C3). Se estiver errado, toda conversão sai transposta por oitavas inteiras sem aviso nenhum. Verificação proposta: gravar uma nota isolada e conhecida tocada no jogo (ex. a tecla rotulada C4 ou A4, sem efeitos) e comparar a frequência com o que a ferramenta assume.
 
 ---
 
@@ -112,6 +113,8 @@ O parser de MIDI do protótipo é próprio e não tem dependência — migra dir
 **Fase 3 — entrada de áudio.** Basic Pitch sob demanda, com aviso de aproximação e recomendação de piano solo.
 
 **Fase 4 — biblioteca compartilhada.** Alguém converte, ajusta, publica o mapa pronto. O próximo não refaz nada. É o que faria a função voltar a ter movimento no jogo: o gargalo real hoje não é a ferramenta, é que cada pessoa começa do zero sozinha.
+
+**Ideia futura, ainda não planejada — afinador ao vivo.** Ouvir o áudio do jogo pelo microfone durante o modo cópia e comparar a nota captada com a nota esperada da coluna atual, avisando se divergem. Resolveria de raiz a questão da convenção de oitava (item em "Ainda por confirmar") e pegaria erros de instrumento errado ou transposição esquecida em tempo real, não só depois que a pessoa já clicou tudo. Depende de detecção de pitch no navegador (autocorrelação ou YIN) — sem dependência de servidor, mesmo espírito do Basic Pitch local da Fase 3.
 
 ---
 
