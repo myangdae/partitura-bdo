@@ -48,7 +48,7 @@ export default function Roll({ notas, compassos, espacosPorCompasso, divisor, al
 
   return (
     <div ref={scrollRef} className="overflow-auto max-h-[540px] bg-sunk">
-      <div className="relative flex">
+      <div className="relative flex w-max">
         <div className="sticky left-0 z-[4] bg-sunk border-r border-edge2 flex-none w-[66px]">
           {rows.map((m) => {
             const sharp = ehSustenido(m);
