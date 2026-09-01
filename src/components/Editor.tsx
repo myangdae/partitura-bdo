@@ -386,7 +386,12 @@ export default function Editor() {
                 </span>
                 {analise.indicesSuspeitos.size > 0 && (
                   <span>
-                    <i style={{ background: "#a479d9" }}></i>atípica (revisar)
+                    <i style={{ background: "#4fb3c4" }}></i>atípica (revisar)
+                  </span>
+                )}
+                {Object.values(done).some(Boolean) && (
+                  <span>
+                    <i style={{ background: "#a479d9" }}></i>já colocada no jogo
                   </span>
                 )}
               </div>
@@ -413,6 +418,7 @@ export default function Editor() {
               curBar={curBar}
               playheadRef={playheadRef}
               indicesSuspeitos={analise.indicesSuspeitos}
+              done={done}
             />
           </div>
 

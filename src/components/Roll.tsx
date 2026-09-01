@@ -13,9 +13,11 @@ interface RollProps {
   curBar: number;
   playheadRef: React.RefObject<HTMLDivElement | null>;
   indicesSuspeitos: Set<number>;
+  /** Colunas marcadas como já copiadas no jogo, no modo cópia — chave "compasso:coluna". */
+  done: Record<string, boolean>;
 }
 
-export default function Roll({ notas, compassos, espacosPorCompasso, divisor, alcance, guide, curBar, playheadRef, indicesSuspeitos }: RollProps) {
+export default function Roll({ notas, compassos, espacosPorCompasso, divisor, alcance, guide, curBar, playheadRef, indicesSuspeitos, done }: RollProps) {
   const layout = useMemo(() => {
     if (!notas.length) return null;
     const midis = notas.map((n) => n.m);
@@ -100,20 +102,23 @@ export default function Roll({ notas, compassos, espacosPorCompasso, divisor, al
             const inBar = guide && Math.floor(n.c / espacosPorCompasso) === curBar;
             const outOfRange = n.m < alcance.lo || n.m > alcance.hi;
             const suspeita = indicesSuspeitos.has(i);
+            const concluida = !!done[`${Math.floor(n.c / espacosPorCompasso)}:${n.c % espacosPorCompasso}`];
             return (
               <div
                 key={i}
                 title={suspeita ? "Nota atípica — candidata a ruído de transcrição" : undefined}
                 className={
                   "absolute h-[13px] rounded-[2px] text-[9px] leading-[11px] pl-[3px] overflow-hidden whitespace-nowrap z-[2] " +
-                  (outOfRange
-                    ? "bg-rose border border-[#dd7a6d] text-[#2a1210]"
-                    : inBar
-                      ? "bg-gold border border-[#f0bb6d] text-[#2a1c07]"
-                      : "bg-[#c8ccd3] border border-[#9aa0a8] text-[#22262c]") +
+                  (concluida
+                    ? "bg-done border border-[#c19eea] text-[#2a1a3d]"
+                    : outOfRange
+                      ? "bg-rose border border-[#dd7a6d] text-[#2a1210]"
+                      : inBar
+                        ? "bg-gold border border-[#f0bb6d] text-[#2a1c07]"
+                        : "bg-[#c8ccd3] border border-[#9aa0a8] text-[#22262c]") +
                   (suspeita ? " outline outline-2 outline-dashed outline-noise -outline-offset-1" : "")
                 }
-                style={{ left: n.c * colWidth, top: (max - n.m) * 15 + 1, width: Math.max(4, n.l * colWidth - 1) }}
+                style={{ left: n.c * colWidth, top: (max - n.m) * 15 + 1, width: Math.max(4, n.l * colWidth - 1), opacity: concluida ? 0.75 : 1 }}
               >
                 {colWidth > 17 ? nomeNota(n.m) : ""}
               </div>
