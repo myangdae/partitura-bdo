@@ -59,6 +59,42 @@ export function quantizar(src: ArquivoMidi, opcoes: OpcoesQuantizacao): Resultad
   return { notas, compassos };
 }
 
+/**
+ * Move uma nota por oitavas inteiras (±12 semitons) até caber em [lo, hi], escolhendo o menor
+ * deslocamento possível. Preserva a nota da escala — diferente de Transpor, que desloca tudo
+ * pelo mesmo número de semitons e muda a tonalidade da peça inteira. Se o alcance for menor que
+ * uma oitava (caso extremo, praticamente nunca acontece com os instrumentos do jogo), devolve a
+ * nota original sem tentar forçar.
+ */
+function dobrarNotaParaAlcance(m: number, lo: number, hi: number): number {
+  if (lo > hi || (m >= lo && m <= hi)) return m;
+  let melhor = m;
+  let menorDeslocamento = Infinity;
+  for (let oitavas = -8; oitavas <= 8; oitavas++) {
+    const candidato = m + 12 * oitavas;
+    if (candidato >= lo && candidato <= hi && Math.abs(oitavas) < menorDeslocamento) {
+      menorDeslocamento = Math.abs(oitavas);
+      melhor = candidato;
+    }
+  }
+  return melhor;
+}
+
+/**
+ * Dobra por oitava todas as notas fora de [lo, hi]. Pode criar colisões novas (duas notas que
+ * eram uma oitava distantes viram a mesma tecla na mesma coluna) — dedupe de novo depois.
+ */
+export function dobrarParaAlcance(notas: NotaGrid[], alcance: { lo: number; hi: number }): NotaGrid[] {
+  const dobradas = notas.map((n) => ({ ...n, m: dobrarNotaParaAlcance(n.m, alcance.lo, alcance.hi) }));
+  const vistos = new Set<string>();
+  return dobradas.filter((n) => {
+    const chave = `${n.m}|${n.c}`;
+    if (vistos.has(chave)) return false;
+    vistos.add(chave);
+    return true;
+  });
+}
+
 /** Notas de um compasso, agrupadas por coluna (para o modo cópia e a lista de cliques). */
 export interface ColunaDoCompasso {
   /** coluna dentro do compasso (0-indexed) */

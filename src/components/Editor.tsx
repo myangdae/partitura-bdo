@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { parseMidi, midiDeExemplo, type ArquivoMidi } from "../lib/midi";
-import { quantizar, colunasDoCompasso, larguraColuna } from "../lib/quantize";
+import { quantizar, colunasDoCompasso, larguraColuna, dobrarParaAlcance } from "../lib/quantize";
 import { analisarOrcamento } from "../lib/analyze";
 import { RITMOS, PERBAR_POR_RITMO, PROPRIEDADES_DE_NOTA, ESTILOS, ALCANCE_PADRAO_CHUTADO, nomeNota, type Ritmo, type Estilo } from "../lib/bdo";
 import Roll from "./Roll";
@@ -19,6 +19,7 @@ export default function Editor() {
   const [alcanceLo, setAlcanceLo] = useState(ALCANCE_PADRAO_CHUTADO.lo);
   const [alcanceHi, setAlcanceHi] = useState(ALCANCE_PADRAO_CHUTADO.hi);
   const [limiteDeNotas, setLimiteDeNotas] = useState(500);
+  const [dobrarOitava, setDobrarOitava] = useState(false);
 
   const [guide, setGuide] = useState(false);
   const [curBar, setCurBar] = useState(0);
@@ -37,8 +38,10 @@ export default function Editor() {
 
   const { notas, compassos } = useMemo(() => {
     if (!src) return { notas: [], compassos: 0 };
-    return quantizar(src, { divisor, espacosPorCompasso: perbar, transpor });
-  }, [src, divisor, perbar, transpor]);
+    const resultado = quantizar(src, { divisor, espacosPorCompasso: perbar, transpor });
+    if (!dobrarOitava) return resultado;
+    return { notas: dobrarParaAlcance(resultado.notas, { lo: alcanceLo, hi: alcanceHi }), compassos: resultado.compassos };
+  }, [src, divisor, perbar, transpor, dobrarOitava, alcanceLo, alcanceHi]);
 
   useEffect(() => {
     if (curBar >= compassos) setCurBar(0);
@@ -309,6 +312,17 @@ export default function Editor() {
                   <input type="number" aria-label="mais aguda" value={alcanceHi} onChange={(e) => setAlcanceHi(Number(e.target.value))} />
                 </div>
                 <div className="hint">Em número MIDI. 60 é o C4. Chutado — confirme no jogo o alcance real do seu instrumento.</div>
+              </div>
+              <div className="f">
+                <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+                  <input type="checkbox" checked={dobrarOitava} onChange={(e) => setDobrarOitava(e.target.checked)} style={{ accentColor: "var(--color-gold)" }} />
+                  Dobrar oitava das notas fora do alcance
+                </label>
+                <div className="hint">
+                  Move só as notas que estouram o alcance uma ou mais oitavas pra dentro dele, mantendo a mesma nota da escala — diferente de
+                  Transpor, não muda a tonalidade da música inteira. Ligue isso depois de conferir as notas atípicas (destacadas em roxo no
+                  grid): dobrar a oitava de uma nota que já é ruído de transcrição só esconde o problema, não resolve.
+                </div>
               </div>
               <div className="f">
                 <label htmlFor="budget">Limite de notas do seu grau</label>
