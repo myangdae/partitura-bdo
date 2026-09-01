@@ -370,6 +370,11 @@ export default function Editor() {
                 <span>
                   <i style={{ background: "#c9584a" }}></i>fora do alcance
                 </span>
+                {analise.indicesSuspeitos.size > 0 && (
+                  <span>
+                    <i style={{ background: "#a479d9" }}></i>atípica (revisar)
+                  </span>
+                )}
               </div>
               <button className="btn" disabled={!notas.length} onClick={play}>
                 {playing ? "Parar" : "Ouvir"}
@@ -393,6 +398,7 @@ export default function Editor() {
               guide={guide}
               curBar={curBar}
               playheadRef={playheadRef}
+              indicesSuspeitos={analise.indicesSuspeitos}
             />
           </div>
 

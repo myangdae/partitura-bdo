@@ -12,9 +12,10 @@ interface RollProps {
   guide: boolean;
   curBar: number;
   playheadRef: React.RefObject<HTMLDivElement | null>;
+  indicesSuspeitos: Set<number>;
 }
 
-export default function Roll({ notas, compassos, espacosPorCompasso, divisor, alcance, guide, curBar, playheadRef }: RollProps) {
+export default function Roll({ notas, compassos, espacosPorCompasso, divisor, alcance, guide, curBar, playheadRef, indicesSuspeitos }: RollProps) {
   const layout = useMemo(() => {
     if (!notas.length) return null;
     const midis = notas.map((n) => n.m);
@@ -98,16 +99,19 @@ export default function Roll({ notas, compassos, espacosPorCompasso, divisor, al
           {notas.map((n, i) => {
             const inBar = guide && Math.floor(n.c / espacosPorCompasso) === curBar;
             const outOfRange = n.m < alcance.lo || n.m > alcance.hi;
+            const suspeita = indicesSuspeitos.has(i);
             return (
               <div
                 key={i}
+                title={suspeita ? "Nota atípica — candidata a ruído de transcrição" : undefined}
                 className={
                   "absolute h-[13px] rounded-[2px] text-[9px] leading-[11px] pl-[3px] overflow-hidden whitespace-nowrap z-[2] " +
                   (outOfRange
                     ? "bg-rose border border-[#dd7a6d] text-[#2a1210]"
                     : inBar
                       ? "bg-gold border border-[#f0bb6d] text-[#2a1c07]"
-                      : "bg-[#c8ccd3] border border-[#9aa0a8] text-[#22262c]")
+                      : "bg-[#c8ccd3] border border-[#9aa0a8] text-[#22262c]") +
+                  (suspeita ? " outline outline-2 outline-dashed outline-noise -outline-offset-1" : "")
                 }
                 style={{ left: n.c * colWidth, top: (max - n.m) * 15 + 1, width: Math.max(4, n.l * colWidth - 1) }}
               >
