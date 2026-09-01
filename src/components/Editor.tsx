@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { parseMidi, midiDeExemplo, type ArquivoMidi } from "../lib/midi";
+import { parseMusicXml } from "../lib/musicxml";
+import { extrairXmlDeMxl } from "../lib/mxl";
 import { quantizar, colunasDoCompasso, larguraColuna, dobrarParaAlcance } from "../lib/quantize";
 import { analisarOrcamento } from "../lib/analyze";
 import { RITMOS, PERBAR_POR_RITMO, PROPRIEDADES_DE_NOTA, ESTILOS, ALCANCE_PADRAO_CHUTADO, nomeNota, type Ritmo, type Estilo } from "../lib/bdo";
@@ -71,26 +73,37 @@ export default function Editor() {
     stopPlay();
   }
 
-  function carregarArquivo(file: File) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const parsed = parseMidi(reader.result as ArrayBuffer);
-        setSrc(parsed);
-        setPerbar(parsed.tsn * (8 / parsed.tsd) * 2 || 12);
-        resetSessao();
-        setErrorMsg(null);
-        const bpmSugerido = Math.round(60000000 / parsed.tempo);
-        setLoadWarning(
-          `O arquivo indica ${bpmSugerido} BPM em ${parsed.tsn}/${parsed.tsd}. O BDO conta o pulso de outro jeito — ajuste o BPM pelo cronômetro do jogo, não copiando esse número.`,
-        );
-      } catch (e) {
-        setSrc(null);
-        setErrorMsg(e instanceof Error ? e.message : String(e));
-        setLoadWarning(null);
-      }
-    };
-    reader.readAsArrayBuffer(file);
+  async function detectarEAnalisar(buffer: ArrayBuffer): Promise<ArquivoMidi> {
+    const bytes = new Uint8Array(buffer);
+    const ehMidi = bytes.length >= 4 && bytes[0] === 0x4d && bytes[1] === 0x54 && bytes[2] === 0x68 && bytes[3] === 0x64;
+    if (ehMidi) return parseMidi(buffer);
+
+    const ehZip = bytes.length >= 2 && bytes[0] === 0x50 && bytes[1] === 0x4b;
+    if (ehZip) return parseMusicXml(await extrairXmlDeMxl(buffer));
+
+    const texto = new TextDecoder("utf-8").decode(buffer).trimStart();
+    if (texto.startsWith("<?xml") || texto.includes("<score-partwise")) return parseMusicXml(texto);
+
+    throw new Error("Não reconheci esse arquivo. Aceito MIDI (.mid/.midi) ou MusicXML (.xml/.musicxml/.mxl).");
+  }
+
+  async function carregarArquivo(file: File) {
+    try {
+      const buffer = await file.arrayBuffer();
+      const parsed = await detectarEAnalisar(buffer);
+      setSrc(parsed);
+      setPerbar(parsed.tsn * (8 / parsed.tsd) * 2 || 12);
+      resetSessao();
+      setErrorMsg(null);
+      const bpmSugerido = Math.round(60000000 / parsed.tempo);
+      setLoadWarning(
+        `O arquivo indica ${bpmSugerido} BPM em ${parsed.tsn}/${parsed.tsd}. O BDO conta o pulso de outro jeito — ajuste o BPM pelo cronômetro do jogo, não copiando esse número.`,
+      );
+    } catch (e) {
+      setSrc(null);
+      setErrorMsg(e instanceof Error ? e.message : String(e));
+      setLoadWarning(null);
+    }
   }
 
   function carregarExemplo() {
@@ -200,7 +213,7 @@ export default function Editor() {
                 className={"drop" + (dragOver ? " over" : "")}
                 tabIndex={0}
                 role="button"
-                aria-label="Escolher arquivo MIDI"
+                aria-label="Escolher arquivo de música"
                 onClick={() => fileInputRef.current?.click()}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
@@ -227,13 +240,13 @@ export default function Editor() {
                   if (f) carregarArquivo(f);
                 }}
               >
-                <b>Escolher arquivo MIDI</b>
-                <span>ou arrasta um .mid aqui</span>
+                <b>Escolher arquivo de música</b>
+                <span>MIDI, MusicXML (.xml/.musicxml) ou .mxl — ou arrasta aqui</span>
               </div>
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".mid,.midi"
+                accept=".mid,.midi,.xml,.musicxml,.mxl"
                 style={{ display: "none" }}
                 onChange={(e) => {
                   const f = e.target.files?.[0];
