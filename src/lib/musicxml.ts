@@ -8,8 +8,10 @@
  * - Só score-partwise (o formato que MuseScore, Finale e Sibelius exportam na prática).
  * - `divisions` é tratado como constante pro arquivo inteiro — se mudar no meio (raro), a
  *   última leitura vale pra tudo.
- * - Notas ligadas por `<tie>` não são fundidas numa nota só: cada `<note>` vira um clique
- *   separado no grid, mesmo quando musicalmente é uma nota sustentada atravessando duas.
+ * - Notas ligadas por `<tie>` são fundidas por altura dentro de uma parte: uma nota com
+ *   `type="stop"` que casa com uma amarra aberta da mesma altura estende a duração da nota
+ *   original em vez de virar um clique novo. Não diferencia por `<voice>` — em ligaduras que
+ *   cruzam vozes diferentes com a mesma altura (raro) pode fundir errado.
  */
 import type { ArquivoMidi, FaixaMidi, NotaMidi } from "./midi";
 
@@ -60,6 +62,8 @@ export function parseMusicXml(texto: string): ArquivoMidi {
     const notes: NotaMidi[] = [];
     let cursor = 0;
     let inicioNotaBase = 0;
+    /** altura MIDI -> índice em `notes` da nota ainda "aberta" por uma ligadura em andamento */
+    const amarrasAbertas = new Map<number, number>();
 
     parte.querySelectorAll("measure").forEach((medida) => {
       Array.from(medida.children).forEach((el) => {
@@ -89,7 +93,22 @@ export function parseMusicXml(texto: string): ArquivoMidi {
               const passo = textoDe(pitchEl, "step") || "C";
               const alteracao = numeroDe(pitchEl, "alter") || 0;
               const oitava = numeroDe(pitchEl, "octave") ?? 4;
-              notes.push({ m: pitchParaMidi(passo, alteracao, oitava), t: inicio, d: Math.max(1, duracao) });
+              const m = pitchParaMidi(passo, alteracao, oitava);
+
+              const tiposDeTie = Array.from(el.querySelectorAll("tie")).map((t) => t.getAttribute("type"));
+              const continuaLigadura = tiposDeTie.includes("stop") && amarrasAbertas.has(m);
+
+              if (continuaLigadura) {
+                notes[amarrasAbertas.get(m)!].d += Math.max(1, duracao);
+              } else {
+                notes.push({ m, t: inicio, d: Math.max(1, duracao) });
+              }
+
+              if (tiposDeTie.includes("start")) {
+                amarrasAbertas.set(m, continuaLigadura ? amarrasAbertas.get(m)! : notes.length - 1);
+              } else {
+                amarrasAbertas.delete(m);
+              }
             }
           }
 
