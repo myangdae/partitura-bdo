@@ -1,0 +1,483 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Partitura — companheiro do compositor de Black Desert</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#141619; --panel:#1b1e23; --panel2:#22262c; --sunk:#101215;
+  --edge:#2d323a; --edge2:#3e444e;
+  --ink:#e9e6df; --ink2:#9aa1ab; --ink3:#697079;
+  --gold:#e0a04a; --gold2:#96682c; --gold-soft:#3a2c17;
+  --rose:#c9584a; --sage:#7fa688;
+  --r:8px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Instrument Sans",system-ui,sans-serif;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+button,select,input{font-family:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+.wrap{max-width:1340px;margin:0 auto;padding:0 22px 80px}
+
+header{padding:44px 0 26px;border-bottom:1px solid var(--edge);margin-bottom:26px}
+.brand{font-family:"Instrument Serif",Georgia,serif;font-size:54px;line-height:.95;letter-spacing:-.015em;margin:0}
+.brand em{font-style:italic;color:var(--gold)}
+header p{margin:14px 0 0;max-width:56ch;color:var(--ink2);font-size:15.5px}
+
+.grid2{display:grid;grid-template-columns:296px minmax(0,1fr);gap:22px;align-items:start}
+@media(max-width:1000px){.grid2{grid-template-columns:1fr}}
+
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:var(--r)}
+.card + .card{margin-top:16px}
+.card > h2{margin:0;padding:13px 16px;font-size:12.5px;font-weight:600;color:var(--ink2);border-bottom:1px solid var(--edge)}
+.card .body{padding:16px}
+
+.drop{border:1px dashed var(--edge2);border-radius:var(--r);background:var(--sunk);padding:24px 14px;text-align:center;cursor:pointer;transition:.15s}
+.drop:hover,.drop.over{border-color:var(--gold);background:var(--gold-soft)}
+.drop b{display:block;font-weight:500;font-size:14.5px}
+.drop span{font-size:12.5px;color:var(--ink3)}
+input[type=file]{display:none}
+.orline{display:flex;align-items:center;gap:10px;margin:12px 0;color:var(--ink3);font-size:12px}
+.orline:before,.orline:after{content:"";flex:1;height:1px;background:var(--edge)}
+
+.f{margin-top:13px}
+.f:first-child{margin-top:0}
+.f label{display:block;font-size:12.5px;color:var(--ink2);margin-bottom:5px}
+.f .hint{font-size:11.5px;color:var(--ink3);margin-top:4px;line-height:1.45}
+select,input[type=number],input[type=text]{width:100%;background:var(--sunk);color:var(--ink);border:1px solid var(--edge);border-radius:6px;padding:7px 9px;font-size:14px}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+.btn{background:var(--panel2);color:var(--ink);border:1px solid var(--edge);border-radius:6px;padding:8px 14px;font-size:13.5px;cursor:pointer;transition:border-color .15s}
+.btn:hover{border-color:var(--gold2)}
+.btn[disabled]{opacity:.4;cursor:default}
+.btn.gold{background:var(--gold-soft);border-color:var(--gold2);color:var(--gold)}
+.btn.gold:hover{border-color:var(--gold)}
+
+.finder{margin-top:12px;display:flex;flex-direction:column;gap:1px}
+.finder .grp{font-size:11px;color:var(--ink3);margin:10px 0 4px}
+.finder .grp:first-child{margin-top:0}
+.finder a{display:flex;align-items:baseline;gap:8px;padding:8px 10px;border-radius:5px;
+  color:var(--ink);text-decoration:none;font-size:13.5px;transition:background .12s}
+.finder a:hover{background:var(--panel2)}
+.finder a.dead{pointer-events:none;opacity:.35}
+.finder a s{font-size:11.5px;color:var(--ink3);margin-left:auto;text-decoration:none;text-align:right}
+.trk{border:1px solid var(--edge);border-radius:6px;padding:10px 11px;margin-bottom:8px;background:var(--panel2)}
+.trk.off{opacity:.45}
+.trk .top{display:flex;align-items:center;gap:8px}
+.trk .top input{accent-color:var(--gold);margin:0;flex:none}
+.trk .nm{font-size:13.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trk .ct{margin-left:auto;font-size:11.5px;color:var(--ink3);flex:none}
+.trk select{margin-top:8px;font-size:12.5px;padding:5px 7px}
+.knobs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.knob label{display:block;font-size:10.5px;color:var(--ink3);margin-bottom:2px}
+.knob input{padding:4px 6px;font-size:12px;text-align:center}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--edge);border:1px solid var(--edge);border-radius:var(--r);overflow:hidden;margin-bottom:16px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.st{background:var(--panel);padding:13px 15px}
+.st b{display:block;font-family:"Instrument Serif",serif;font-size:27px;line-height:1.1;letter-spacing:-.01em}
+.st span{font-size:11.5px;color:var(--ink2)}
+.st.bad b{color:var(--rose)} .st.good b{color:var(--sage)}
+
+.msg{padding:11px 14px;border-radius:6px;font-size:13.5px;margin-bottom:12px;line-height:1.55}
+.msg.bad{background:#2b1c1a;border:1px solid #4b2e2a;color:#e3a79e}
+.msg.warn{background:#2b2517;border:1px solid #4a3f27;color:#dcc089}
+
+.stage{background:var(--panel);border:1px solid var(--edge);border-radius:var(--r);overflow:hidden}
+.bar{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--edge);flex-wrap:wrap}
+.bar h2{margin:0;font-size:12.5px;font-weight:600;color:var(--ink2);margin-right:auto}
+.legend{display:flex;gap:13px;font-size:11.5px;color:var(--ink3);align-items:center}
+.legend i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:5px}
+
+.roll{overflow:auto;max-height:540px;background:var(--sunk)}
+.inner{position:relative;display:flex}
+.gutter{position:sticky;left:0;z-index:4;background:var(--sunk);border-right:1px solid var(--edge2);flex:none;width:66px}
+.krow{height:15px;position:relative}
+.krow .nat{position:absolute;right:5px;top:0;font-size:9.5px;line-height:15px;color:var(--ink3)}
+.krow .shp{position:absolute;left:0;top:1px;height:13px;width:46px;background:#2a2e35;border:1px solid #3a3f48;border-radius:2px;
+  font-size:9.5px;line-height:11px;text-align:center;color:#b9bfc8}
+.canvas{position:relative;flex:none}
+.grow{height:15px;border-bottom:1px solid #1a1d21}
+.grow.b{background:#191c20}
+.grow.oob{background:#2a1a19}
+.vl{position:absolute;top:0;bottom:0;width:1px;background:#22262c}
+.vl.beat{background:#2d323a}
+.vl.bar{background:#454b56}
+.bn{position:absolute;top:2px;font-size:10px;color:var(--ink3);padding-left:5px;z-index:3}
+.dim{position:absolute;top:0;bottom:0;background:rgba(16,18,21,.72);z-index:3;pointer-events:none}
+.nt{position:absolute;height:13px;border-radius:2px;background:#c8ccd3;border:1px solid #9aa0a8;
+  font-size:9px;line-height:11px;color:#22262c;padding-left:3px;overflow:hidden;white-space:nowrap;z-index:2}
+.nt.hi{background:var(--gold);border-color:#f0bb6d;color:#2a1c07}
+.nt.out{background:var(--rose);border-color:#dd7a6d;color:#2a1210}
+.play{position:absolute;top:0;bottom:0;width:2px;background:var(--gold);z-index:5;display:none}
+
+.guide{margin-top:16px;background:var(--panel);border:1px solid var(--edge);border-radius:var(--r)}
+.gtop{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--edge);flex-wrap:wrap}
+.gtop .lbl{font-family:"Instrument Serif",serif;font-size:23px;letter-spacing:-.01em}
+.prog{flex:1;min-width:120px;height:4px;background:var(--sunk);border-radius:2px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--gold);width:0;transition:width .25s}
+.cols{padding:8px 10px 14px;display:flex;flex-direction:column;gap:1px}
+.col{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:5px;cursor:pointer;transition:background .12s}
+.col:hover{background:var(--panel2)}
+.col.done{opacity:.42}
+.col.done .keys{text-decoration:line-through}
+.col .ci{flex:none;width:26px;height:26px;border-radius:5px;background:var(--sunk);border:1px solid var(--edge);
+  display:grid;place-items:center;font-size:12px;color:var(--ink3)}
+.col.done .ci{background:var(--gold-soft);border-color:var(--gold2);color:var(--gold)}
+.col .keys{font-family:"Instrument Serif",serif;font-size:20px;letter-spacing:.02em}
+.col .kind{margin-left:auto;font-size:11.5px;color:var(--ink3);flex:none}
+.hollow{padding:44px 20px;text-align:center;color:var(--ink3);font-size:14px}
+
+textarea{width:100%;height:190px;background:var(--sunk);color:var(--ink);border:1px solid var(--edge);border-radius:var(--r);
+  padding:13px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.6;resize:vertical;margin-top:10px}
+footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--edge);color:var(--ink3);font-size:13px;max-width:74ch}
+</style>
+
+<div class="wrap">
+<header>
+  <h1 class="brand">Partitura<em>.</em></h1>
+  <p>Abre uma música e ela vira um mapa de cliques para o editor do Black Desert. Você não precisa saber ler partitura — só copiar o desenho.</p>
+</header>
+
+<div class="grid2">
+<div>
+
+  <div class="card"><h2>Música</h2><div class="body">
+    <div class="drop" id="drop" tabindex="0" role="button" aria-label="Escolher arquivo MIDI">
+      <b>Escolher arquivo MIDI</b><span>ou arrasta um .mid aqui</span>
+    </div>
+    <input type="file" id="file" accept=".mid,.midi">
+    <div class="orline">ou</div>
+    <button class="btn" id="demo" style="width:100%">Carregar exemplo de acompanhamento</button>
+  </div></div>
+
+  <div class="card"><h2>Não tem o arquivo?</h2><div class="body">
+    <div class="f"><label for="q">Escreva o nome da música</label>
+      <input type="text" id="q" placeholder="nocturne op 9 no 2" autocomplete="off"></div>
+    <div class="finder" id="finder"></div>
+  </div></div>
+
+  <div class="card"><h2>Ajustes do editor</h2><div class="body">
+    <div class="f"><label for="ritmo">Ritmo</label>
+      <select id="ritmo"><option>3/4</option><option>4/4</option><option selected>6/8</option></select></div>
+    <div class="f"><label for="div">Propriedade de nota</label>
+      <select id="div"><option value="1">1/4</option><option value="2" selected>1/8</option><option value="4">1/16</option><option value="8">1/32</option><option value="16">1/64</option></select>
+      <div class="hint">Quanto menor, mais fiel — e mais cliques.</div></div>
+    <div class="f"><label for="perbar">Espaços por compasso</label>
+      <input type="number" id="perbar" value="12" min="1" max="64">
+      <div class="hint">Conta quantos espaços cabem entre dois números na régua do jogo.</div></div>
+    <div class="f"><label for="bpm">BPM</label><input type="number" id="bpm" value="60" min="20" max="300"></div>
+    <div class="f"><label for="estilo">Estilo</label>
+      <select id="estilo"><option>Sustenido</option><option selected>Pedal de Sustentação</option></select></div>
+  </div></div>
+
+  <div class="card"><h2>Limites</h2><div class="body">
+    <div class="f"><label for="tr">Transpor (semitons)</label><input type="number" id="tr" value="0" min="-36" max="36">
+      <div class="hint">Use para trazer notas de volta ao alcance.</div></div>
+    <div class="f"><label>Alcance do instrumento</label>
+      <div class="duo"><input type="number" id="lo" value="36" aria-label="mais grave"><input type="number" id="hi" value="96" aria-label="mais aguda"></div>
+      <div class="hint">Em número MIDI. 60 é o C4.</div></div>
+    <div class="f"><label for="budget">Limite de notas do seu grau</label><input type="number" id="budget" value="500" min="1"></div>
+  </div></div>
+
+  <div class="card" id="tcard" hidden><h2>Faixas</h2><div class="body" id="tracks"></div></div>
+
+</div>
+<div>
+
+  <div id="stats"></div>
+  <div id="msgs"></div>
+
+  <div class="stage">
+    <div class="bar">
+      <h2>Grid</h2>
+      <div class="legend">
+        <span><i style="background:#e0a04a"></i>compasso atual</span>
+        <span><i style="background:#c9584a"></i>fora do alcance</span>
+      </div>
+      <button class="btn" id="playbtn" disabled>Ouvir</button>
+      <button class="btn gold" id="guidebtn" disabled>Modo cópia</button>
+    </div>
+    <div class="roll" id="roll"><div class="hollow">Abra um MIDI ou carregue o exemplo.</div></div>
+  </div>
+
+  <div class="guide" id="guide" hidden>
+    <div class="gtop">
+      <span class="lbl" id="glbl">Compasso 1</span>
+      <div class="prog"><i id="pbar"></i></div>
+      <button class="btn" id="prev">Anterior</button>
+      <button class="btn gold" id="next">Próximo</button>
+    </div>
+    <div class="cols" id="cols"></div>
+  </div>
+
+  <textarea id="list" readonly placeholder="A lista completa de cliques aparece aqui."></textarea>
+  <div style="margin-top:8px"><button class="btn" id="copy">Copiar lista</button> <span id="ok" style="color:var(--sage);font-size:13px"></span></div>
+
+</div>
+</div>
+
+<footer>A ferramenta não lê nem escreve nada do jogo — ela só desenha o mapa para você copiar à mão. Confirme dentro do jogo o alcance do seu instrumento e o limite de notas do seu grau, porque esses números mudam conforme o talento musical.</footer>
+</div>
+
+<script>
+const NM=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+const BK=[0,1,0,1,0,0,1,0,1,0,1,0];
+const nm=m=>NM[((m%12)+12)%12]+(Math.floor(m/12)-1);
+const bk=m=>!!BK[((m%12)+12)%12];
+
+const INSTR={
+ "Flauta":["Flauta Transversal (novato)","Gravador","Flauta Transversal (Florquestra)","Clarinete","Trompa"],
+ "Violinos":["Outros","Harpa (novato)","Violino (novato)","Violão Acústico","Contrabaixo","Harpa","Violino","Marnibass","Guitarra: Onda Prateada","Guitarra: Highway","Guitarra: Hexe Glam"],
+ "Piano Elétrico":["Piano (novato)","Piano (Florquestra)","Marnion: Planeta Ondulado","Marnion: Árvore Fantasiosa","Marnion: Nota Secreta","Marnion: Sanduíche"],
+ "Percussão":["Tambor","Prato","Kit de Bateria","Tamborim"]};
+
+let src=null, notes=[], bars=0, guide=false, curBar=0, done={}, ctx=null, timer=null;
+
+/* ---------- MIDI ---------- */
+function vlq(d,p){let v=0,b;do{b=d.getUint8(p.i++);v=(v<<7)|(b&127)}while(b&128);return v}
+function parse(buf){
+  const d=new DataView(buf);
+  if(d.getUint32(0)!==0x4d546864) throw new Error("Esse arquivo não é um MIDI. Procure um .mid da música.");
+  const div=d.getUint16(12);
+  if(div&0x8000) throw new Error("MIDI em formato SMPTE não é suportado.");
+  let p=14,n=d.getUint16(10),tracks=[],tempo=500000,tsn=4,tsd=4;
+  for(let t=0;t<n&&p+8<=buf.byteLength;t++){
+    if(d.getUint32(p)!==0x4d54726b){p+=8+d.getUint32(p+4);continue}
+    const end=p+8+d.getUint32(p+4),c={i:p+8};
+    let tick=0,st=0,on=new Map(),ns=[],label="";
+    while(c.i<end){
+      tick+=vlq(d,c);
+      let b=d.getUint8(c.i);
+      if(b&0x80){st=b;c.i++} else if(!st) break;
+      if(st===0xff){
+        const mt=d.getUint8(c.i++),ln=vlq(d,c);
+        if(mt===0x51&&ln===3)tempo=(d.getUint8(c.i)<<16)|(d.getUint8(c.i+1)<<8)|d.getUint8(c.i+2);
+        if(mt===0x58&&ln>=2){tsn=d.getUint8(c.i);tsd=2**d.getUint8(c.i+1)}
+        if((mt===3||mt===4)&&!label){let s="";for(let k=0;k<ln;k++)s+=String.fromCharCode(d.getUint8(c.i+k));label=s.trim()}
+        c.i+=ln;
+      } else if(st===0xf0||st===0xf7){c.i+=vlq(d,c)}
+      else{
+        const ty=st&0xf0,a=d.getUint8(c.i++);
+        const v=(ty===0xc0||ty===0xd0)?0:d.getUint8(c.i++);
+        if(ty===0x90&&v>0){if(!on.has(a))on.set(a,[]);on.get(a).push(tick)}
+        else if(ty===0x80||(ty===0x90&&!v)){const q=on.get(a);if(q&&q.length){const s0=q.shift();ns.push({m:a,t:s0,d:Math.max(1,tick-s0)})}}
+      }
+    }
+    p=end;
+    if(ns.length)tracks.push({label:label||("Faixa "+(tracks.length+1)),notes:ns,on:true,instr:"Piano (novato)"});
+  }
+  if(!tracks.length)throw new Error("Não achei notas nesse arquivo.");
+  return{div,tempo,tsn,tsd,tracks};
+}
+
+function demoData(){
+  const ns=[],B=39,C=[46,51,55];
+  for(let g=0;g<4;g++){const o=g*3;ns.push({m:B,t:o,d:1});[1,2].forEach(k=>C.forEach(m=>ns.push({m,t:o+k,d:1})))}
+  return{div:1,tempo:1000000,tsn:6,tsd:8,tracks:[{label:"Acompanhamento",notes:ns,on:true,instr:"Piano (novato)"}]};
+}
+
+/* ---------- build ---------- */
+function build(){
+  const q=+dq.value,pb=+perbar.value,tr=+trIn.value,lo=+lo_.value,hi=+hi_.value;
+  notes=[];
+  if(!src)return;
+  src.tracks.forEach(t=>{ if(!t.on)return;
+    t.notes.forEach(n=>notes.push({m:n.m+tr,c:Math.round(n.t/src.div*q),l:Math.max(1,Math.round(n.d/src.div*q))}));});
+  const seen=new Set();
+  notes=notes.filter(n=>{const k=n.m+"|"+n.c;if(seen.has(k))return 0;seen.add(k);return 1});
+  notes.sort((a,b)=>a.c-b.c||a.m-b.m);
+  const span=notes.length?Math.max(...notes.map(n=>n.c+n.l)):0;
+  bars=Math.max(1,Math.ceil(span/pb));
+  if(curBar>=bars)curBar=0;
+  drawStats(lo,hi);drawRoll(lo,hi);drawGuide();drawList();
+}
+
+function drawStats(lo,hi){
+  const bg=+budget.value,out=notes.filter(n=>n.m<lo||n.m>hi).length;
+  if(!notes.length){stats.innerHTML="";msgs.innerHTML="";return}
+  const mn=Math.min(...notes.map(n=>n.m)),mx=Math.max(...notes.map(n=>n.m));
+  stats.innerHTML=`<div class="stats">
+    <div class="st ${notes.length>bg?"bad":"good"}"><b>${notes.length}</b><span>notas · cabe ${bg}</span></div>
+    <div class="st"><b>${bars}</b><span>compassos</span></div>
+    <div class="st"><b>${nm(mn)}–${nm(mx)}</b><span>alcance usado</span></div>
+    <div class="st ${out?"bad":"good"}"><b>${out}</b><span>fora do alcance</span></div></div>`;
+  let m="";
+  if(notes.length>bg)m+=`<div class="msg bad">Passou ${notes.length-bg} notas. Desligue faixas, use uma grade maior (1/8 em vez de 1/16), ou suba de grau antes de salvar.</div>`;
+  if(out)m+=`<div class="msg warn">${out} notas não cabem no instrumento. Ajuste a transposição até esse número zerar.</div>`;
+  msgs.innerHTML=m;
+}
+
+function drawRoll(lo,hi){
+  if(!notes.length){roll.innerHTML='<div class="hollow">Abra um MIDI ou carregue o exemplo.</div>';return}
+  const pb=+perbar.value,q=+dq.value;
+  const mn=Math.min(...notes.map(n=>n.m))-1,mx=Math.max(...notes.map(n=>n.m))+1;
+  const cols=bars*pb, CW=Math.max(11,Math.min(26,Math.floor(980/Math.max(cols,1))));
+  let g="",rows="";
+  for(let m=mx;m>=mn;m--){
+    const b=bk(m),o=(m<lo||m>hi);
+    g+=`<div class="krow">${b?`<span class="shp">${nm(m)}</span>`:`<span class="nat">${nm(m)}</span>`}</div>`;
+    rows+=`<div class="grow${o?" oob":b?" b":""}"></div>`;
+  }
+  let lines="";
+  for(let c=0;c<=cols;c++){
+    const cls=c%pb===0?"vl bar":(c%q===0?"vl beat":"vl");
+    lines+=`<div class="${cls}" style="left:${c*CW}px"></div>`;
+    if(c%pb===0&&c<cols)lines+=`<div class="bn" style="left:${c*CW}px">${c/pb+1}</div>`;
+  }
+  let bl="";
+  notes.forEach(n=>{
+    const inBar=guide&&Math.floor(n.c/pb)===curBar;
+    const o=n.m<lo||n.m>hi;
+    bl+=`<div class="nt${o?" out":inBar?" hi":""}" style="left:${n.c*CW}px;top:${(mx-n.m)*15+1}px;width:${Math.max(4,n.l*CW-1)}px">${CW>17?nm(n.m):""}</div>`;
+  });
+  let dim="";
+  if(guide){
+    if(curBar>0)dim+=`<div class="dim" style="left:0;width:${curBar*pb*CW}px"></div>`;
+    if(curBar<bars-1)dim+=`<div class="dim" style="left:${(curBar+1)*pb*CW}px;right:0"></div>`;
+  }
+  roll.innerHTML=`<div class="inner"><div class="gutter">${g}</div>
+    <div class="canvas" style="width:${cols*CW}px">${rows}${lines}${bl}${dim}<div class="play" id="ph"></div></div></div>`;
+  if(guide)roll.scrollLeft=Math.max(0,curBar*pb*CW-60);
+}
+
+function colsOf(b){
+  const pb=+perbar.value,map=new Map();
+  notes.filter(n=>Math.floor(n.c/pb)===b).forEach(n=>{
+    const k=n.c%pb;if(!map.has(k))map.set(k,[]);map.get(k).push(n.m)});
+  return [...map.entries()].sort((a,b2)=>a[0]-b2[0]).map(([c,ms])=>({c,ms:ms.sort((x,y)=>x-y)}));
+}
+
+function drawGuide(){
+  guideEl.hidden=!guide||!notes.length;
+  if(guideEl.hidden)return;
+  const cs=colsOf(curBar);
+  glbl.textContent="Compasso "+(curBar+1)+" de "+bars;
+  const tot=cs.length||1,dn=cs.filter(x=>done[curBar+":"+x.c]).length;
+  pbar.style.width=(dn/tot*100)+"%";
+  prev.disabled=curBar===0;next.disabled=curBar>=bars-1;
+  cols.innerHTML=cs.length?cs.map(x=>{
+    const k=curBar+":"+x.c,d=done[k];
+    return `<div class="col${d?" done":""}" data-k="${k}">
+      <span class="ci">${d?"✓":x.c+1}</span>
+      <span class="keys">${x.ms.map(nm).join("   ")}</span>
+      <span class="kind">${x.ms.length>1?x.ms.length+" juntas":"sozinha"}</span></div>`;
+  }).join(""):'<div class="hollow">Compasso vazio.</div>';
+  cols.querySelectorAll(".col").forEach(el=>el.onclick=()=>{
+    const k=el.dataset.k;done[k]=!done[k];drawGuide()});
+}
+
+function drawList(){
+  const pb=+perbar.value;let t="";
+  for(let b=0;b<bars;b++)colsOf(b).forEach(x=>{
+    t+=`compasso ${String(b+1).padStart(3)} · coluna ${String(x.c+1).padStart(2)}   ${x.ms.map(nm).join("  ")}\n`});
+  list.value=t;
+}
+
+/* ---------- tracks ---------- */
+function drawTracks(){
+  tcard.hidden=!src;if(!src)return;
+  tracks.innerHTML=src.tracks.map((t,i)=>`<div class="trk${t.on?"":" off"}">
+    <div class="top"><input type="checkbox" ${t.on?"checked":""} data-i="${i}" aria-label="ativar faixa">
+      <span class="nm">${t.label.replace(/[<>&]/g,"")}</span><span class="ct">${t.notes.length}</span></div>
+    <select data-ins="${i}">${Object.entries(INSTR).map(([g,xs])=>
+      `<optgroup label="${g}">${xs.map(x=>`<option ${x===t.instr?"selected":""}>${x}</option>`).join("")}</optgroup>`).join("")}</select>
+    <div class="knobs">
+      <div class="knob"><label>Reverb</label><input type="number" min="0" max="100" value="${i?30:45}"></div>
+      <div class="knob"><label>Delay</label><input type="number" min="0" max="100" value="0"></div>
+      <div class="knob"><label>Chorus</label><input type="number" min="0" max="100" value="0"></div>
+    </div></div>`).join("");
+  tracks.querySelectorAll("input[data-i]").forEach(c=>c.onchange=e=>{
+    src.tracks[+e.target.dataset.i].on=e.target.checked;drawTracks();build()});
+  tracks.querySelectorAll("select[data-ins]").forEach(s=>s.onchange=e=>{
+    src.tracks[+e.target.dataset.ins].instr=e.target.value});
+}
+
+/* ---------- audio ---------- */
+function play(){
+  if(timer){stop();return}
+  if(!notes.length)return;
+  ctx=ctx||new (window.AudioContext||window.webkitAudioContext)();
+  const q=+dq.value,spb=60/(+bpm.value)/q*2,t0=ctx.currentTime+.08;
+  const sus=estilo.value.startsWith("Pedal");
+  notes.forEach(n=>{
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.type="triangle";o.frequency.value=440*2**((n.m-69)/12);
+    const s=t0+n.c*spb,d=n.l*spb*(sus?2.6:1);
+    g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(.13,s+.012);
+    g.gain.exponentialRampToValueAtTime(.0006,s+Math.max(.14,d));
+    o.connect(g).connect(ctx.destination);o.start(s);o.stop(s+Math.max(.2,d)+.05);
+  });
+  const span=Math.max(...notes.map(n=>n.c+n.l));
+  playbtn.textContent="Parar";
+  const CW=roll.querySelector(".canvas")?parseFloat(getComputedStyle(roll.querySelector(".canvas")).width)/(bars*+perbar.value):0;
+  const ph=document.getElementById("ph");if(ph)ph.style.display="block";
+  const st=performance.now();
+  timer=setInterval(()=>{
+    const e=(performance.now()-st)/1000/spb;
+    if(ph){ph.style.left=(e*CW)+"px"}
+    if(e>span+1)stop();
+  },30);
+}
+function stop(){clearInterval(timer);timer=null;playbtn.textContent="Ouvir";
+  const ph=document.getElementById("ph");if(ph)ph.style.display="none";
+  if(ctx){ctx.close();ctx=null}}
+
+/* ---------- wiring ---------- */
+const $=id=>document.getElementById(id);
+const drop=$("drop"),file=$("file"),dq=$("div"),perbar=$("perbar"),trIn=$("tr"),lo_=$("lo"),hi_=$("hi"),
+ budget=$("budget"),bpm=$("bpm"),estilo=$("estilo"),ritmo=$("ritmo"),roll=$("roll"),stats=$("stats"),msgs=$("msgs"),
+ tcard=$("tcard"),tracks=$("tracks"),guideEl=$("guide"),cols=$("cols"),glbl=$("glbl"),pbar=$("pbar"),
+ prev=$("prev"),next=$("next"),list=$("list"),playbtn=$("playbtn"),guidebtn=$("guidebtn"),finder=$("finder");
+
+function loaded(){
+  drawTracks();guide=false;curBar=0;done={};guidebtn.textContent="Modo cópia";
+  playbtn.disabled=guidebtn.disabled=false;build();
+}
+function load(f){
+  const r=new FileReader();
+  r.onload=()=>{try{
+    src=parse(r.result);
+    const b=Math.round(60000000/src.tempo);
+    perbar.value=src.tsn*(8/src.tsd)*2||12;
+    loaded();
+    msgs.innerHTML+=`<div class="msg warn">O arquivo indica ${b} BPM em ${src.tsn}/${src.tsd}. O BDO conta o pulso de outro jeito — ajuste o BPM pelo cronômetro do jogo, não copiando esse número.</div>`;
+  }catch(e){src=null;notes=[];stats.innerHTML="";roll.innerHTML='<div class="hollow">Abra um MIDI ou carregue o exemplo.</div>';
+    msgs.innerHTML=`<div class="msg bad">${e.message}</div>`;tcard.hidden=true;guideEl.hidden=true}};
+  r.readAsArrayBuffer(f);
+}
+drop.onclick=()=>file.click();
+drop.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();file.click()}};
+file.onchange=e=>e.target.files[0]&&load(e.target.files[0]);
+["dragenter","dragover"].forEach(v=>drop.addEventListener(v,e=>{e.preventDefault();drop.classList.add("over")}));
+["dragleave","drop"].forEach(v=>drop.addEventListener(v,e=>{e.preventDefault();drop.classList.remove("over")}));
+drop.addEventListener("drop",e=>e.dataTransfer.files[0]&&load(e.dataTransfer.files[0]));
+const SOURCES=[
+ {g:"Procurar um MIDI pronto"},
+ {n:"BitMidi",d:"113 mil arquivos, ouve antes de baixar",u:q=>"https://bitmidi.com/search?q="+q},
+ {n:"FreeMidi",d:"pop, rock, temas de TV e filme",u:q=>"https://www.google.com/search?q=site%3Afreemidi.org+"+q},
+ {n:"VGMusic",d:"música de videogame, 25 anos de acervo",u:q=>"https://www.google.com/search?q=site%3Avgmusic.com+"+q},
+ {n:"MuseScore",d:"clássico e domínio público",u:q=>"https://musescore.com/sheetmusic?text="+q},
+ {n:"Busca aberta",d:"quando nenhum dos outros tem",u:q=>"https://www.google.com/search?q="+q+"+midi+download"},
+ {g:"Só tem o áudio"},
+ {n:"Basic Pitch",d:"converte MP3 em MIDI no navegador",u:()=>"https://basicpitch.spotify.com/"},
+];
+function drawFinder(){
+  const raw=$("q").value.trim(),q=encodeURIComponent(raw);
+  finder.innerHTML=SOURCES.map(s=>s.g?`<div class="grp">${s.g}</div>`
+    :`<a href="${s.u(q)}" target="_blank" rel="noopener" class="${(!raw&&s.n!=="Basic Pitch")?"dead":""}">${s.n}<s>${s.d}</s></a>`).join("");
+}
+$("q").oninput=drawFinder; drawFinder();
+$("demo").onclick=()=>{src=demoData();perbar.value=12;dq.value="2";ritmo.value="6/8";bpm.value=60;loaded()};
+[dq,perbar,trIn,lo_,hi_,budget].forEach(el=>el.oninput=build);
+ritmo.onchange=()=>{perbar.value={"3/4":6,"4/4":8,"6/8":12}[ritmo.value];build()};
+guidebtn.onclick=()=>{guide=!guide;guidebtn.textContent=guide?"Sair do modo cópia":"Modo cópia";build()};
+prev.onclick=()=>{if(curBar>0){curBar--;build()}};
+next.onclick=()=>{if(curBar<bars-1){curBar++;build()}};
+playbtn.onclick=play;
+$("copy").onclick=async()=>{if(!list.value)return;
+  try{await navigator.clipboard.writeText(list.value)}catch(e){list.select();document.execCommand("copy")}
+  $("ok").textContent="Copiado";setTimeout(()=>$("ok").textContent="",1500)};
+</script>
